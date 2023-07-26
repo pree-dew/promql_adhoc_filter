@@ -9,7 +9,9 @@ import (
 	"github.com/VictoriaMetrics/metricsql"
 )
 
-func addLabelsToExpr(existingLabels [][]metricsql.LabelFilter, byLabels []string, labels map[string]string) [][]metricsql.LabelFilter {
+func addLabelsToExpr(existingLabels [][]metricsql.LabelFilter,
+	byLabels []string, labels map[string]string,
+) [][]metricsql.LabelFilter {
 	for k, val := range labels {
 		for _, by := range byLabels {
 			if by == k {

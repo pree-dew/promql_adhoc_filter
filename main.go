@@ -9,7 +9,7 @@ import (
 	"github.com/VictoriaMetrics/metricsql"
 )
 
-func addLabelsToExpr(existingLabels [][]metricsql.LabelFilter,
+func AddLabelsToExpr(existingLabels [][]metricsql.LabelFilter,
 	byLabels []string, labels map[string]string,
 ) [][]metricsql.LabelFilter {
 	for k, val := range labels {
@@ -23,7 +23,7 @@ func addLabelsToExpr(existingLabels [][]metricsql.LabelFilter,
 	return existingLabels
 }
 
-func addLabelsToPromql(expr interface{}, labels map[string]string) {
+func AddLabelsToPromql(expr interface{}, labels map[string]string) {
 	switch v := expr.(type) {
 	case *metricsql.AggrFuncExpr:
 		byLabels := v.Modifier.Args
@@ -32,23 +32,23 @@ func addLabelsToPromql(expr interface{}, labels map[string]string) {
 			case *metricsql.FuncExpr:
 				re := arg.Args[0].(*metricsql.RollupExpr)
 				me := re.Expr.(*metricsql.MetricExpr)
-				me.LabelFilterss = addLabelsToExpr(me.LabelFilterss, byLabels, labels)
+				me.LabelFilterss = AddLabelsToExpr(me.LabelFilterss, byLabels, labels)
 				re.Expr = me
 				v.Args[0] = re
 
 			case *metricsql.MetricExpr:
-				arg.LabelFilterss = addLabelsToExpr(arg.LabelFilterss, byLabels, labels)
+				arg.LabelFilterss = AddLabelsToExpr(arg.LabelFilterss, byLabels, labels)
 				v.Args[0] = arg
 			case metricsql.Expr:
-				addLabelsToPromql(a, labels)
+				AddLabelsToPromql(a, labels)
 			}
 		}
 
 		expr = v
 
 	case *metricsql.BinaryOpExpr:
-		addLabelsToPromql(v.Left, labels)
-		addLabelsToPromql(v.Right, labels)
+		AddLabelsToPromql(v.Left, labels)
+		AddLabelsToPromql(v.Right, labels)
 	case *metricsql.NumberExpr:
 		fmt.Printf("Number: %s \n", v.AppendString(nil))
 	default:
@@ -71,7 +71,7 @@ func main() {
 		}
 	}
 
-	addLabelsToPromql(expr, labels)
+	AddLabelsToPromql(expr, labels)
 
 	fmt.Printf("parsed expr: %s\n", expr.AppendString(nil))
 }
